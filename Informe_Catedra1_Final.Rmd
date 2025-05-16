@@ -1,0 +1,349 @@
+
+---
+title: "Análisis Térmico y Gestión de Mantenimiento EP-110"
+author: "Sebastián Marinovic"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lubridate)
+
+```
+
+# 1. Definición del Problema / Objetivo
+
+El monitoreo térmico de los enfriadores EP-110 es clave para mantener el control térmico de las plantas GCP-2 y GCP-4 (Plantas Limpieza de Gases). Se busca analizar el rendimiento térmico, identificar equipos críticos según ΔT Agua, detectar ciclos completos de mantención y evaluar correlación con la temperatura de gases.
+
+**Pregunta de investigación:**
+> ¿Qué equipos presentan bajo desempeño térmico (ΔT Agua < 4°C), cuántos ciclos de mantención se han completado, y qué correlación existe entre temperatura de gases y ΔT Agua?
+
+**Variables:**
+- Cuantitativas: ΔT Agua, Temperatura GCP
+- Cualitativas: Planta, Equipo, Estado
+
+# 2. Introducción
+
+Los datos provienen del monitoreo de temperatura manual de EP-110´s y datos obtenidos en PiSystem.
+
+- `data.csv`: registros térmicos de EP-110 (96 filas)
+- `temp_gcp_data.csv`: temperaturas de trenes GCP (1600 filas)
+
+```{r cargar-datos}
+ep <- read_csv("data.csv") %>%
+  mutate(FechaHora = as.POSIXct(paste(Fecha, Hora), format="%Y-%m-%d %H:%M"))
+
+gcp <- read_csv("temp_gcp_data.csv") %>%
+  mutate(FechaHora = ymd_hms(FechaHora))
+```
+
+
+> **Nota técnica:**  
+> Para este análisis se utilizará como referencia principal el diferencial de temperatura del agua (ΔT Agua), ya que entrega una medición más estable y representativa del desempeño térmico de los enfriadores EP-110. En contraste, las temperaturas del lado efluente presentan alta variabilidad debido a las diferencias en el revestimiento interno de las líneas y a la heterogeneidad en los espesores, lo cual afecta su confiabilidad como indicador de eficiencia térmica.
+
+
+# 3. Preprocesamiento de Datos
+
+```{r limpieza}
+ep <- ep %>%
+  filter(`Delta Agua` > 0) %>%
+  rename(`Δ Temp Agua` = `Delta Agua`) %>%
+  filter(!is.na(`Δ Temp Agua`))
+
+summary(ep)
+summary(gcp)
+```
+
+# 4. Análisis Exploratorio de Datos (EDA)
+
+```{r boxplots}
+ggplot(ep, aes(x = Equipo, y = `Δ Temp Agua`, fill = Planta)) +
+  geom_boxplot() +
+  labs(title = "Distribución de ΔT Agua por Equipo", y = "ΔT Agua (°C)") +
+  theme_minimal()
+```
+
+```{r histograma-dt-agua}
+ggplot(ep, aes(x = `Δ Temp Agua`, fill = Planta)) +
+  geom_histogram(bins = 20, alpha = 0.7) +
+  labs(title = "Histograma de ΔT Agua", x = "ΔT Agua (°C)", y = "Frecuencia") +
+  theme_minimal()
+```
+
+```{r correlacion}
+merged <- inner_join(ep, gcp, by = "FechaHora")
+cor_data <- merged %>%
+  group_by(Equipo) %>%
+  summarise(
+    n = sum(!is.na(`Δ Temp Agua`) & !is.na(Temperatura)),
+    sd_dt = sd(`Δ Temp Agua`, na.rm = TRUE),
+    sd_temp = sd(Temperatura, na.rm = TRUE),
+    correlacion = if (n >= 3 && sd_dt > 0 && sd_temp > 0) {
+      cor(`Δ Temp Agua`, Temperatura, use = "complete.obs")
+    } else {
+      NA_real_
+    },
+    .groups = "drop"
+  ) %>%
+  arrange(correlacion)
+
+cor_data
+```
+
+
+## 4.1 Comparación Temperatura de Salida Gas Trenes y ΔT Agua EP-110
+
+A continuación se presenta la relación entre la temperatura de gases de los trenes GCP-2A/B y GCP-4A/B (líneas de procesos) y el rendimiento térmico (ΔT Agua) de los enfriadores EP-110 asociados.
+Se presentan los gráficos con **doble eje** para mejorar la visualización de la relación entre temperatura de gases por tren (eje izquierdo) y el ΔT Agua por enfriador asociado (eje derecho), según agrupación funcional de trenes y equipos.
+
+```{r tren-gcp2a-vs-dt, fig.width=10, fig.height=5}
+# Rescalado para doble eje
+rescale_dt <- function(x) {
+  scales::rescale(x, to = c(10, 45))
+}
+
+inv_rescale_dt <- function(x) {
+  scales::rescale(x, from = c(10, 45), to = c(0, 10))
+}
+
+# Datos filtrados
+gcp2a <- gcp %>% filter(Tren == "GCP-2A")
+ep2a <- ep %>% filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0)
+
+# Gráfico mejorado
+ggplot() +
+  geom_line(data = gcp2a, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
+  annotate("text", x = min(gcp2a$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
+  geom_line(data = ep2a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
+  geom_point(data = ep2a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  scale_y_continuous(
+    name = "Temperatura Gas Salida GCP-2A (°C)",
+    limits = c(10, 45),
+    sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Temperatura Gas Salida GCP-2A vs ΔT Agua (EP-110 A/B/C)",
+    x = "Fecha y Hora", color = "Equipo"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.y.left = element_text(color = "red", face = "bold"),
+    axis.text.y.left = element_text(color = "red"),
+    axis.title.y.right = element_text(color = "blue", face = "bold"),
+    axis.text.y.right = element_text(color = "blue"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+```
+
+```{r tren-gcp2b-vs-dt, fig.width=9, fig.height=5}
+gcp2b <- gcp %>% filter(Tren == "GCP-2B")
+ep2b <- ep %>%
+  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0)
+
+ggplot() +
+  geom_line(data = gcp2b, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
+  annotate("text", x = min(gcp2b$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
+  geom_line(data = ep2b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
+  geom_point(data = ep2b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  scale_y_continuous(
+    name = "Temperatura Gas Salida GCP-2B (°C)",
+    limits = c(10, 45),
+    sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Temperatura Gas Salida GCP-2B vs ΔT Agua (EP-110 D/E/F)",
+    x = "Fecha y Hora", color = "Equipo"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.y.left = element_text(color = "red", face = "bold"),
+    axis.text.y.left = element_text(color = "red"),
+    axis.title.y.right = element_text(color = "blue", face = "bold"),
+    axis.text.y.right = element_text(color = "blue"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+
+```
+
+```{r tren-gcp4a-vs-dt, fig.width=9, fig.height=5}
+gcp4a <- gcp %>% filter(Tren == "GCP-4A")
+ep4a <- ep %>%
+  filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0)
+
+ggplot() +
+  geom_line(data = gcp4a, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
+  annotate("text", x = min(gcp4a$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
+  geom_line(data = ep4a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
+  geom_point(data = ep4a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  scale_y_continuous(
+    name = "Temperatura Gas Salida GCP-4A (°C)",
+    limits = c(10, 45),
+    sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Temperatura Gas Salida GCP-4A vs ΔT Agua (EP-110 A/B/C)",
+    x = "Fecha y Hora", color = "Equipo"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.y.left = element_text(color = "red", face = "bold"),
+    axis.text.y.left = element_text(color = "red"),
+    axis.title.y.right = element_text(color = "blue", face = "bold"),
+    axis.text.y.right = element_text(color = "blue"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+```
+
+```{r tren-gcp4b-vs-dt, fig.width=9, fig.height=5}
+gcp4b <- gcp %>% filter(Tren == "GCP-4B")
+ep4b <- ep %>%
+  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0)
+
+ggplot() +
+  geom_line(data = gcp4b, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
+  annotate("text", x = min(gcp4b$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
+  geom_line(data = ep4b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
+  geom_point(data = ep4b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  scale_y_continuous(
+    name = "Temperatura Gas Salida GCP-4B (°C)",
+    limits = c(10, 45),
+    sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
+  ) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Temperatura Gas Salida GCP-4B vs ΔT Agua (EP-110 D/E/F)",
+    x = "Fecha y Hora", color = "Equipo"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.title.y.left = element_text(color = "red", face = "bold"),
+    axis.text.y.left = element_text(color = "red"),
+    axis.title.y.right = element_text(color = "blue", face = "bold"),
+    axis.text.y.right = element_text(color = "blue"),
+    legend.position = "bottom",
+    legend.title = element_blank()
+  )
+
+```
+
+
+# 5. Planificación del Proyecto
+
+**Marco Teórico:**  
+ΔT indica eficiencia térmica. Disminuciones sostenidas pueden reflejar fallas de transferencia de calor o pérdida de capacidad. La correlación con temperatura de gases ayuda a entender el contexto operativo.
+
+**Metodología:**
+- Análisis de ΔT promedio por equipo
+- Identificación de equipos críticos (ΔT < 4°C)
+- Evaluación de ciclos de mantención completos (6 equipos intervenidos)
+- Análisis de correlación cruzada
+
+**Entregables:**
+- Gráficos de distribución y correlación
+- Tabla de equipos críticos
+- Línea de tiempo de mantenciones
+- Identificación de patrones para intervenciones futuras
+
+
+# 6. Interpretación de Resultados
+
+A continuación, se presenta un análisis diferenciado del comportamiento térmico de los enfriadores EP-110 asociados a las plantas GCP-2 y GCP-4. El análisis se basa en el valor promedio del diferencial de temperatura de agua (ΔT Agua), el número de registros por debajo del umbral crítico de 4°C, y el porcentaje que estos representan respecto del total de registros válidos (excluyendo valores de 0).
+
+Se consideran como equipos críticos aquellos que presentan un ΔT Agua promedio inferior a 4°C o que superan el 20% de registros bajo ese umbral, lo que puede indicar pérdida de eficiencia térmica y necesidad de revisión o mantención.
+
+El resumen de resultados se presenta de manera separada para cada planta:
+
+- 6.1 Planta GCP-2 (Trenes GCP-2A y GCP-2B, Equipos EP-110 A a F)
+
+- 6.2 Planta GCP-4 (Trenes GCP-4A y GCP-4B, Equipos EP-110 A a F)
+
+También se evalúa la ocurrencia de ciclos completos de mantención, definidos como fechas en las que los seis equipos EP-110 fueron intervenidos en conjunto.
+
+## 6.1 GCP-2 (EP-110 A/B/C y D/E/F)
+
+```{r resumen-gcp2}
+resumen_gcp2 <- ep %>%
+  filter(Planta == "GCP-2", `Δ Temp Agua` > 0) %>%
+  group_by(Equipo) %>%
+  summarise(
+    promedio_dt = mean(`Δ Temp Agua`, na.rm = TRUE),
+    bajo_umbral = sum(`Δ Temp Agua` < 4),
+    pct_bajo = 100 * mean(`Δ Temp Agua` < 4)
+  ) %>%
+  arrange(promedio_dt)
+
+resumen_gcp2
+
+```
+
+```{r resumen-gcp4}
+resumen_gcp4 <- ep %>%
+  filter(Planta == "GCP-4", `Δ Temp Agua` > 0) %>%
+  group_by(Equipo) %>%
+  summarise(
+    promedio_dt = mean(`Δ Temp Agua`, na.rm = TRUE),
+    bajo_umbral = sum(`Δ Temp Agua` < 4),
+    pct_bajo = 100 * mean(`Δ Temp Agua` < 4)
+  ) %>%
+  arrange(promedio_dt)
+
+resumen_gcp4
+
+```
+
+```{r ciclos-mantencion}
+ciclos <- ep %>%
+  filter(Estado == "Mantención") %>%
+  group_by(Equipo, Fecha) %>%
+  summarise(.groups = "drop") %>%
+  group_by(Fecha) %>%
+  summarise(equipos_intervenidos = n_distinct(Equipo)) %>%
+  filter(equipos_intervenidos == 6)
+
+ciclos
+```
+
+# 7. Conclusiones
+
+Del análisis térmico realizado sobre los enfriadores EP-110 asociados a las plantas GCP-2 y GCP-4, se concluye lo siguiente:
+
+## - Presencia de equipos críticos:
+Tanto en GCP-2 como en GCP-4 se identifican equipos con desempeño térmico deficiente. En GCP-2, los equipos EP-110 A, C y E presentan un ΔT Agua promedio inferior a 4°C y altos porcentajes de registros bajo ese umbral (superiores al 75%), lo que evidencia una pérdida sostenida de eficiencia. En GCP-4, los equipos EP-110 C, A y F también exhiben un comportamiento crítico, con una situación similar respecto al bajo desempeño térmico.
+
+## - Tendencia general en GCP-2 vs. GCP-4:
+La planta GCP-2 muestra condiciones más comprometidas en cuanto a eficiencia térmica general, con todos sus equipos presentando niveles de criticidad (ya sea por ΔT promedio o por porcentaje bajo umbral). En contraste, en GCP-4 se observan tres equipos con desempeño aceptable y tres con deficiencias más marcadas, indicando una mejor distribución del rendimiento.
+
+## - Ausencia de ciclos completos de mantención:
+No se registran fechas en las que los seis enfriadores hayan sido intervenidos de forma simultánea. Esto sugiere que no se han realizado ciclos de mantención integrales, lo que podría estar afectando la eficiencia global del sistema de enfriamiento.
+
+## Recomendación de acción:
+Se recomienda implementar una función modular automatizada que permita monitorear periódicamente el rendimiento térmico, identificar tempranamente los equipos críticos y sugerir acciones correctivas, así como evaluar la programación de ciclos de mantención integrales.
+
+### - Propuesta de Función Modular para el Examen
+
+Vamos a crear una función general llamada: `analisis_ep110()`
+
+#### Propósito de la función
+
+- Analizar el desempeño térmico de los equipos EP-110, detectando:
+  - Equipos críticos por bajo ΔT Agua
+  - Ciclos completos de mantención (cuando los 6 equipos fueron intervenidos)
+  - Correlación térmica entre temperatura de gases y ΔT Agua
+  - Resumen operativo por equipo (media, % bajo umbral, etc.)
