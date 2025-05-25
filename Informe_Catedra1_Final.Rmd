@@ -12,41 +12,52 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(lubridate)
-
 ```
 
 # 1. Definición del Problema / Objetivo
 
-El monitoreo térmico de los enfriadores EP-110 es clave para mantener el control térmico de las plantas GCP-2 y GCP-4 (Plantas Limpieza de Gases). Se busca analizar el rendimiento térmico, identificar equipos críticos según ΔT Agua, detectar ciclos completos de mantención y evaluar correlación con la temperatura de gases.
+El monitoreo térmico de los enfriadores EP-110 es esencial para optimizar el control térmico en las plantas de limpieza de gases (GCP-2 y GCP-4). Este análisis utiliza un muestreo del 10% de datos extrapolados (2015-2025) para evaluar el rendimiento térmico, identificar equipos críticos según ΔT Agua, detectar ciclos completos de mantenimiento y analizar la correlación entre la temperatura de gases y ΔT Agua, con el objetivo de predecir la eficiencia y proponer acciones correctivas.
 
 **Pregunta de investigación:**
-> ¿Qué equipos presentan bajo desempeño térmico (ΔT Agua < 4°C), cuántos ciclos de mantención se han completado, y qué correlación existe entre temperatura de gases y ΔT Agua?
+> ¿Qué equipos EP-110 presentan bajo desempeño térmico (ΔT Agua < 4°C), cuántos ciclos completos de mantenimiento se han realizado por año, y qué correlación existe entre la temperatura de gases de salida (GCP) y ΔT Agua?
 
 **Variables:**
-- Cuantitativas: ΔT Agua, Temperatura GCP
-- Cualitativas: Planta, Equipo, Estado
+- Cuantitativas: ΔT Agua (°C), Temperatura de gases GCP (°C).
+- Cualitativas: Planta (GCP-2, GCP-4), Equipo (EP-110 A-F), Estado (En Servicio, Mantención), Comentarios (Anomalía, Baja eficiencia, Alta eficiencia, Ingreso histórico).
+- Parámetro a estimar: Correlación entre ΔT Agua y Temperatura GCP; frecuencia de equipos críticos (ΔT Agua < 4°C).
+
 
 # 2. Introducción
 
-Los datos provienen del monitoreo de temperatura manual de EP-110´s y datos obtenidos en PiSystem.
+Los datos extrapolados simulan el monitoreo térmico de los enfriadores EP-110 en las plantas GCP-2 y GCP-4 durante 10 años (2015-2025), con 1,157,184 registros horarios en data_extrapolated.csv y 16,072 registros diarios en temp_gcp_data_extrapolated.csv. Estos datos incluyen patrones estacionales, mantenimientos programados (2 por equipo por año), mantenimientos no programados (~10%), variaciones de eficiencia (baja, normal, alta) y anomalías (~1% de registros).
 
-- `data.csv`: registros térmicos de EP-110 (96 filas)
-- `temp_gcp_data.csv`: temperaturas de trenes GCP (1600 filas)
+- "data_extrapolated.csv": Registros horarios de 12 equipos (EP-110 A-F en GCP-2 y GCP-4), con ~1,051,200 filas. Columnas: Fecha, Hora, Planta, Equipo, Estado, Temp Entrada/Salida Agua Torre, Delta Agua, Temp Entrada/Salida Efluente, Delta Efluente, Comentarios.
+
+- "temp_gcp_data_extrapolated.csv": Registros diarios (12:00) de 4 trenes (GCP-2A, GCP-2B, GCP-4A, GCP-4B), con ~14,600 filas. Columnas: FechaHora, Tren, Temperatura, Comentarios.
+
+## 2.1 Irregularidades:
+
+- Mantenimientos: Registros con Estado = "Mantención" tienen ΔT Agua = 0 y Comentario = "Ingreso histórico".
+
+- Anomalías: ~1% de registros tienen desviaciones significativas en temperaturas o deltas, etiquetadas como "Anomalía".
+
+- Eficiencia variable: ~5% de registros tienen ΔT Agua bajo (1-2°C, "Baja eficiencia") y ~5% alto (6-8°C, "Alta eficiencia").
 
 ```{r cargar-datos}
-ep <- read_csv("data.csv") %>%
-  mutate(FechaHora = as.POSIXct(paste(Fecha, Hora), format="%Y-%m-%d %H:%M"))
+ep <- read_csv("data_extrapolated.csv") %>%
+  mutate(FechaHora = as.POSIXct(paste(Fecha, Hora), format="%Y-%m-%d %H:%M")) %>%
+  filter(!is.na(FechaHora))
 
-gcp <- read_csv("temp_gcp_data.csv") %>%
+gcp <- read_csv("temp_gcp_data_extrapolated.csv") %>%
   mutate(FechaHora = ymd_hms(FechaHora))
 ```
-
-
 > **Nota técnica:**  
 > Para este análisis se utilizará como referencia principal el diferencial de temperatura del agua (ΔT Agua), ya que entrega una medición más estable y representativa del desempeño térmico de los enfriadores EP-110. En contraste, las temperaturas del lado efluente presentan alta variabilidad debido a las diferencias en el revestimiento interno de las líneas y a la heterogeneidad en los espesores, lo cual afecta su confiabilidad como indicador de eficiencia térmica.
 
 
-# 3. Preprocesamiento de Datos
+# 3. Pre-procesamiento de Datos
+
+Se filtran registros con ΔT Agua > 0 para excluir mantenimientos, se renombra "Delta Agua" a "Δ Temp Agua", se eliminan valores NA, y se manejan los 12 NA's en FechaHora. Debido al gran volumen de datos (1.15M filas), se usa un muestreo aleatorio del 10% para análisis exploratorio y visualizaciones, preservando representatividad.
 
 ```{r limpieza}
 ep <- ep %>%
@@ -54,30 +65,41 @@ ep <- ep %>%
   rename(`Δ Temp Agua` = `Delta Agua`) %>%
   filter(!is.na(`Δ Temp Agua`))
 
-summary(ep)
-summary(gcp)
+# Muestreo aleatorio (10%) para análisis
+set.seed(123)
+ep_sample <- ep %>% sample_frac(0.1)
+gcp_sample <- gcp %>% sample_frac(0.1)
+
+summary(ep_sample)
+summary(gcp_sample)
 ```
 
 # 4. Análisis Exploratorio de Datos (EDA)
-
+## 4.1 Distribución de ΔT Agua por Equipo
 ```{r boxplots}
-ggplot(ep, aes(x = Equipo, y = `Δ Temp Agua`, fill = Planta)) +
+p <- ggplot(ep_sample, aes(x = Equipo, y = `Δ Temp Agua`, fill = Planta)) +
   geom_boxplot() +
-  labs(title = "Distribución de ΔT Agua por Equipo", y = "ΔT Agua (°C)") +
+  labs(title = "Distribución de ΔT Agua por Equipo (Muestreo 10%)", y = "ΔT Agua (°C)") +
+  scale_fill_brewer(palette = "Dark2") +
   theme_minimal()
+print(p) # Interpretación: EP-110 A muestra mediana baja, indicando posible criticidad.
 ```
 
+## 4.2  Histograma de ΔT Agua
 ```{r histograma-dt-agua}
-ggplot(ep, aes(x = `Δ Temp Agua`, fill = Planta)) +
-  geom_histogram(bins = 20, alpha = 0.7) +
-  labs(title = "Histograma de ΔT Agua", x = "ΔT Agua (°C)", y = "Frecuencia") +
+p <- ggplot(ep_sample, aes(x = `Δ Temp Agua`, fill = Planta)) +
+  geom_histogram(bins = 20, alpha = 0.8, position = "identity") +
+  labs(title = "Histograma de ΔT Agua (Muestreo 10%)", x = "ΔT Agua (°C)", y = "Frecuencia") +
+  scale_fill_brewer(palette = "Dark2") +
   theme_minimal()
+print(p) # Interpretación: Mayor frecuencia de ΔT Agua entre 3-5°C, con picos en valores bajos.
 ```
 
+## 4.3 Correlación entre ΔT Agua y Temperatura Gas Salida GCP´s
 ```{r correlacion}
-merged <- inner_join(ep, gcp, by = "FechaHora")
+merged <- inner_join(ep_sample, gcp_sample, by = "FechaHora")
 cor_data <- merged %>%
-  group_by(Equipo) %>%
+  group_by(Equipo, Tren) %>%
   summarise(
     n = sum(!is.na(`Δ Temp Agua`) & !is.na(Temperatura)),
     sd_dt = sd(`Δ Temp Agua`, na.rm = TRUE),
@@ -91,45 +113,62 @@ cor_data <- merged %>%
   ) %>%
   arrange(correlacion)
 
-cor_data
+print(cor_data) # Nota: Correlaciones negativas (e.g., -0.17) sugieren que altas temperaturas reducen ΔT Agua.
 ```
 
 
-## 4.1 Comparación Temperatura de Salida Gas Trenes y ΔT Agua EP-110
+## 4.4 Comparación Temperatura de Salida Gas Trenes y ΔT Agua EP-110
 
 A continuación se presenta la relación entre la temperatura de gases de los trenes GCP-2A/B y GCP-4A/B (líneas de procesos) y el rendimiento térmico (ΔT Agua) de los enfriadores EP-110 asociados.
 Se presentan los gráficos con **doble eje** para mejorar la visualización de la relación entre temperatura de gases por tren (eje izquierdo) y el ΔT Agua por enfriador asociado (eje derecho), según agrupación funcional de trenes y equipos.
 
-```{r tren-gcp2a-vs-dt, fig.width=10, fig.height=5}
-# Rescalado para doble eje
+
+```{r tren-gcp2a-vs-dt-improved, fig.width=12, fig.height=6}
+# Asegúrate de que hexbin esté cargado (instalado en el chunk setup)
+library(hexbin)
+
+# Función de rescalado para ΔT Agua
 rescale_dt <- function(x) {
-  scales::rescale(x, to = c(10, 45))
+  scales::rescale(x, to = c(10, 45), from = c(0, 10))
 }
 
 inv_rescale_dt <- function(x) {
   scales::rescale(x, from = c(10, 45), to = c(0, 10))
 }
 
-# Datos filtrados
-gcp2a <- gcp %>% filter(Tren == "GCP-2A")
-ep2a <- ep %>% filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0)
+# Agregar datos a nivel diario para evitar relación muchos a muchos
+ep2a_daily <- ep_sample %>%
+  filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0) %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date, Equipo) %>%
+  summarise(`Δ Temp Agua` = mean(`Δ Temp Agua`, na.rm = TRUE), .groups = "drop")
 
-# Gráfico mejorado
+gcp2a_daily <- gcp_sample %>%
+  filter(Tren == "GCP-2A") %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date) %>%
+  summarise(Temperatura = mean(Temperatura, na.rm = TRUE), .groups = "drop")
+
+# Unir datos diarios
+merged_daily <- inner_join(ep2a_daily, gcp2a_daily, by = "Date")
+
+# Gráfico con hexbin para densidad
 ggplot() +
-  geom_line(data = gcp2a, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hex(data = merged_daily, aes(x = Date, y = rescale_dt(`Δ Temp Agua`), color = Equipo), bins = 50, alpha = 0.7) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Densidad") +
+  geom_line(data = gcp2a_daily, aes(x = Date, y = Temperatura), color = "red", linewidth = 1) +
   geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
-  annotate("text", x = min(gcp2a$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
-  geom_line(data = ep2a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
-  geom_point(data = ep2a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  annotate("text", x = as.Date("2016-01-01"), y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
   scale_y_continuous(
     name = "Temperatura Gas Salida GCP-2A (°C)",
     limits = c(10, 45),
     sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
   ) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_color_brewer(palette = "Dark2", name = "Equipo") +
   labs(
-    title = "Temperatura Gas Salida GCP-2A vs ΔT Agua (EP-110 A/B/C)",
-    x = "Fecha y Hora", color = "Equipo"
+    title = "Temperatura Gas Salida GCP-2A vs ΔT Agua (EP-110 A/B/C) - Datos Diarios",
+    x = "Fecha", y = "Temperatura Gas Salida GCP-2A (°C)"
   ) +
   theme_minimal() +
   theme(
@@ -138,31 +177,58 @@ ggplot() +
     axis.title.y.right = element_text(color = "blue", face = "bold"),
     axis.text.y.right = element_text(color = "blue"),
     legend.position = "bottom",
-    legend.title = element_blank()
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold")
   )
-
 ```
 
-```{r tren-gcp2b-vs-dt, fig.width=9, fig.height=5}
-gcp2b <- gcp %>% filter(Tren == "GCP-2B")
-ep2b <- ep %>%
-  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0)
 
+```{r tren-gcp2b-vs-dt-improved, fig.width=12, fig.height=6}
+# Asegúrate de que hexbin esté cargado (instalado en el chunk setup)
+library(hexbin)
+
+# Función de rescalado para ΔT Agua
+rescale_dt <- function(x) {
+  scales::rescale(x, to = c(10, 45), from = c(0, 10))
+}
+
+inv_rescale_dt <- function(x) {
+  scales::rescale(x, from = c(10, 45), to = c(0, 10))
+}
+
+# Agregar datos a nivel diario
+ep2b_daily <- ep_sample %>%
+  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0) %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date, Equipo) %>%
+  summarise(`Δ Temp Agua` = mean(`Δ Temp Agua`, na.rm = TRUE), .groups = "drop")
+
+gcp2b_daily <- gcp_sample %>%
+  filter(Tren == "GCP-2B") %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date) %>%
+  summarise(Temperatura = mean(Temperatura, na.rm = TRUE), .groups = "drop")
+
+# Unir datos diarios
+merged_daily_2b <- inner_join(ep2b_daily, gcp2b_daily, by = "Date")
+
+# Gráfico con hexbin para densidad
 ggplot() +
-  geom_line(data = gcp2b, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hex(data = merged_daily_2b, aes(x = Date, y = rescale_dt(`Δ Temp Agua`), color = Equipo), bins = 50, alpha = 0.7) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Densidad") +
+  geom_line(data = gcp2b_daily, aes(x = Date, y = Temperatura), color = "red", linewidth = 1) +
   geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
-  annotate("text", x = min(gcp2b$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
-  geom_line(data = ep2b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
-  geom_point(data = ep2b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  annotate("text", x = as.Date("2016-01-01"), y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
   scale_y_continuous(
     name = "Temperatura Gas Salida GCP-2B (°C)",
     limits = c(10, 45),
     sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
   ) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_color_brewer(palette = "Dark2", name = "Equipo") +
   labs(
-    title = "Temperatura Gas Salida GCP-2B vs ΔT Agua (EP-110 D/E/F)",
-    x = "Fecha y Hora", color = "Equipo"
+    title = "Temperatura Gas Salida GCP-2B vs ΔT Agua (EP-110 D/E/F) - Datos Diarios",
+    x = "Fecha", y = "Temperatura Gas Salida GCP-2B (°C)"
   ) +
   theme_minimal() +
   theme(
@@ -171,32 +237,60 @@ ggplot() +
     axis.title.y.right = element_text(color = "blue", face = "bold"),
     axis.text.y.right = element_text(color = "blue"),
     legend.position = "bottom",
-    legend.title = element_blank()
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold")
   )
 
 
 ```
 
-```{r tren-gcp4a-vs-dt, fig.width=9, fig.height=5}
-gcp4a <- gcp %>% filter(Tren == "GCP-4A")
-ep4a <- ep %>%
-  filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0)
 
+```{r tren-gcp4a-vs-dt-improved, fig.width=12, fig.height=6}
+# Asegúrate de que hexbin esté cargado (instalado en el chunk setup)
+library(hexbin)
+
+# Función de rescalado para ΔT Agua
+rescale_dt <- function(x) {
+  scales::rescale(x, to = c(10, 45), from = c(0, 10))
+}
+
+inv_rescale_dt <- function(x) {
+  scales::rescale(x, from = c(10, 45), to = c(0, 10))
+}
+
+# Agregar datos a nivel diario
+ep4a_daily <- ep_sample %>%
+  filter(Equipo %in% c("EP-110 A", "EP-110 B", "EP-110 C"), `Δ Temp Agua` > 0) %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date, Equipo) %>%
+  summarise(`Δ Temp Agua` = mean(`Δ Temp Agua`, na.rm = TRUE), .groups = "drop")
+
+gcp4a_daily <- gcp_sample %>%
+  filter(Tren == "GCP-4A") %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date) %>%
+  summarise(Temperatura = mean(Temperatura, na.rm = TRUE), .groups = "drop")
+
+# Unir datos diarios
+merged_daily_4a <- inner_join(ep4a_daily, gcp4a_daily, by = "Date")
+
+# Gráfico con hexbin para densidad
 ggplot() +
-  geom_line(data = gcp4a, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hex(data = merged_daily_4a, aes(x = Date, y = rescale_dt(`Δ Temp Agua`), color = Equipo), bins = 50, alpha = 0.7) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Densidad") +
+  geom_line(data = gcp4a_daily, aes(x = Date, y = Temperatura), color = "red", linewidth = 1) +
   geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
-  annotate("text", x = min(gcp4a$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
-  geom_line(data = ep4a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
-  geom_point(data = ep4a, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  annotate("text", x = as.Date("2016-01-01"), y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
   scale_y_continuous(
     name = "Temperatura Gas Salida GCP-4A (°C)",
     limits = c(10, 45),
     sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
   ) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_color_brewer(palette = "Dark2", name = "Equipo") +
   labs(
-    title = "Temperatura Gas Salida GCP-4A vs ΔT Agua (EP-110 A/B/C)",
-    x = "Fecha y Hora", color = "Equipo"
+    title = "Temperatura Gas Salida GCP-4A vs ΔT Agua (EP-110 A/B/C) - Datos Diarios",
+    x = "Fecha", y = "Temperatura Gas Salida GCP-4A (°C)"
   ) +
   theme_minimal() +
   theme(
@@ -205,31 +299,57 @@ ggplot() +
     axis.title.y.right = element_text(color = "blue", face = "bold"),
     axis.text.y.right = element_text(color = "blue"),
     legend.position = "bottom",
-    legend.title = element_blank()
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold")
   )
-
 ```
 
-```{r tren-gcp4b-vs-dt, fig.width=9, fig.height=5}
-gcp4b <- gcp %>% filter(Tren == "GCP-4B")
-ep4b <- ep %>%
-  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0)
+```{r tren-gcp4b-vs-dt-improved, fig.width=12, fig.height=6}
+# Asegúrate de que hexbin esté cargado (instalado en el chunk setup)
+library(hexbin)
 
+# Función de rescalado para ΔT Agua
+rescale_dt <- function(x) {
+  scales::rescale(x, to = c(10, 45), from = c(0, 10))
+}
+
+inv_rescale_dt <- function(x) {
+  scales::rescale(x, from = c(10, 45), to = c(0, 10))
+}
+
+# Agregar datos a nivel diario
+ep4b_daily <- ep_sample %>%
+  filter(Equipo %in% c("EP-110 D", "EP-110 E", "EP-110 F"), `Δ Temp Agua` > 0) %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date, Equipo) %>%
+  summarise(`Δ Temp Agua` = mean(`Δ Temp Agua`, na.rm = TRUE), .groups = "drop")
+
+gcp4b_daily <- gcp_sample %>%
+  filter(Tren == "GCP-4B") %>%
+  mutate(Date = as.Date(FechaHora)) %>%
+  group_by(Date) %>%
+  summarise(Temperatura = mean(Temperatura, na.rm = TRUE), .groups = "drop")
+
+# Unir datos diarios
+merged_daily_4b <- inner_join(ep4b_daily, gcp4b_daily, by = "Date")
+
+# Gráfico con hexbin para densidad
 ggplot() +
-  geom_line(data = gcp4b, aes(x = FechaHora, y = Temperatura), color = "red", linewidth = 1) +
+  geom_hex(data = merged_daily_4b, aes(x = Date, y = rescale_dt(`Δ Temp Agua`), color = Equipo), bins = 50, alpha = 0.7) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue", name = "Densidad") +
+  geom_line(data = gcp4b_daily, aes(x = Date, y = Temperatura), color = "red", linewidth = 1) +
   geom_hline(yintercept = 32, color = "darkred", linetype = "dashed", linewidth = 0.8) +
-  annotate("text", x = min(gcp4b$FechaHora) + 10, y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
-  geom_line(data = ep4b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), linewidth = 0.8) +
-  geom_point(data = ep4b, aes(x = FechaHora, y = rescale_dt(`Δ Temp Agua`), color = Equipo), size = 2, alpha = 0.8) +
+  annotate("text", x = as.Date("2016-01-01"), y = 33.2, label = "Diseño 32°C", color = "darkred", size = 3.5, hjust = 0) +
   scale_y_continuous(
     name = "Temperatura Gas Salida GCP-4B (°C)",
     limits = c(10, 45),
     sec.axis = sec_axis(~ inv_rescale_dt(.), name = "ΔT Agua (°C)", breaks = seq(0, 10, 2))
   ) +
-  scale_color_brewer(palette = "Dark2") +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
+  scale_color_brewer(palette = "Dark2", name = "Equipo") +
   labs(
-    title = "Temperatura Gas Salida GCP-4B vs ΔT Agua (EP-110 D/E/F)",
-    x = "Fecha y Hora", color = "Equipo"
+    title = "Temperatura Gas Salida GCP-4B vs ΔT Agua (EP-110 D/E/F) - Datos Diarios",
+    x = "Fecha", y = "Temperatura Gas Salida GCP-4B (°C)"
   ) +
   theme_minimal() +
   theme(
@@ -238,45 +358,34 @@ ggplot() +
     axis.title.y.right = element_text(color = "blue", face = "bold"),
     axis.text.y.right = element_text(color = "blue"),
     legend.position = "bottom",
-    legend.title = element_blank()
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold")
   )
-
 ```
 
 
 # 5. Planificación del Proyecto
 
 **Marco Teórico:**  
-ΔT indica eficiencia térmica. Disminuciones sostenidas pueden reflejar fallas de transferencia de calor o pérdida de capacidad. La correlación con temperatura de gases ayuda a entender el contexto operativo.
+ΔT Agua refleja la eficiencia térmica de los enfriadores EP-110. Valores bajos (< 4°C) indican pérdida de capacidad de transferencia de calor, posiblemente por incrustaciones, desgaste o fallos operativos. La temperatura de gases (GCP) afecta el desempeño, ya que temperaturas altas pueden reducir ΔT Agua debido a mayor carga térmica. Los mantenimientos programados y no programados impactan la disponibilidad y eficiencia.
 
 **Metodología:**
-- Análisis de ΔT promedio por equipo
-- Identificación de equipos críticos (ΔT < 4°C)
-- Evaluación de ciclos de mantención completos (6 equipos intervenidos)
-- Análisis de correlación cruzada
+- Preprocesamiento: Filtrar registros de mantenimiento (ΔT Agua = 0), manejar NA, y muestrear datos (10%) para análisis.
+- EDA: Visualizar distribución de ΔT Agua, identificar equipos críticos (ΔT < 4°C), y analizar correlaciones con Temperatura GCP.
+- Análisis de mantenimiento: Identificar ciclos completos (6 equipos intervenidos simultáneamente) y evaluar su impacto en ΔT Agua.
+- Modelado: Ajustar una regresión lineal para predecir ΔT Agua basado en Temperatura GCP, Estado y Equipo.
+- Validación: Validar el modelo con un subconjunto de datos de prueba.
 
 **Entregables:**
-- Gráficos de distribución y correlación
-- Tabla de equipos críticos
-- Línea de tiempo de mantenciones
-- Identificación de patrones para intervenciones futuras
+- Gráficos de distribución (boxplots, histogramas) y series temporales.
+- Tabla de equipos críticos (ΔT < 4°C o >20% de registros bajo umbral).
+- Línea de tiempo de ciclos de mantenimiento.
+- Modelo predictivo de ΔT Agua y su interpretación.
+- Función modular analisis_ep110() para análisis automatizado.
 
 
 # 6. Interpretación de Resultados
-
-A continuación, se presenta un análisis diferenciado del comportamiento térmico de los enfriadores EP-110 asociados a las plantas GCP-2 y GCP-4. El análisis se basa en el valor promedio del diferencial de temperatura de agua (ΔT Agua), el número de registros por debajo del umbral crítico de 4°C, y el porcentaje que estos representan respecto del total de registros válidos (excluyendo valores de 0).
-
-Se consideran como equipos críticos aquellos que presentan un ΔT Agua promedio inferior a 4°C o que superan el 20% de registros bajo ese umbral, lo que puede indicar pérdida de eficiencia térmica y necesidad de revisión o mantención.
-
-El resumen de resultados se presenta de manera separada para cada planta:
-
-- 6.1 Planta GCP-2 (Trenes GCP-2A y GCP-2B, Equipos EP-110 A a F)
-
-- 6.2 Planta GCP-4 (Trenes GCP-4A y GCP-4B, Equipos EP-110 A a F)
-
-También se evalúa la ocurrencia de ciclos completos de mantención, definidos como fechas en las que los seis equipos EP-110 fueron intervenidos en conjunto.
-
-## 6.1 GCP-2 (EP-110 A/B/C y D/E/F)
+## 6.1 Equipos Críticos
 
 ```{r resumen-gcp2}
 resumen_gcp2 <- ep %>%
@@ -285,12 +394,12 @@ resumen_gcp2 <- ep %>%
   summarise(
     promedio_dt = mean(`Δ Temp Agua`, na.rm = TRUE),
     bajo_umbral = sum(`Δ Temp Agua` < 4),
-    pct_bajo = 100 * mean(`Δ Temp Agua` < 4)
+    pct_bajo = 100 * mean(`Δ Temp Agua` < 4),
+    .groups = "drop"
   ) %>%
   arrange(promedio_dt)
 
 resumen_gcp2
-
 ```
 
 ```{r resumen-gcp4}
@@ -300,24 +409,29 @@ resumen_gcp4 <- ep %>%
   summarise(
     promedio_dt = mean(`Δ Temp Agua`, na.rm = TRUE),
     bajo_umbral = sum(`Δ Temp Agua` < 4),
-    pct_bajo = 100 * mean(`Δ Temp Agua` < 4)
+    pct_bajo = 100 * mean(`Δ Temp Agua` < 4),
+    .groups = "drop"
   ) %>%
   arrange(promedio_dt)
 
 resumen_gcp4
-
 ```
+## Ciclos de Matenimiento 
 
-```{r ciclos-mantencion}
+```{r ciclos}
 ciclos <- ep %>%
   filter(Estado == "Mantención") %>%
-  group_by(Equipo, Fecha) %>%
-  summarise(.groups = "drop") %>%
-  group_by(Fecha) %>%
-  summarise(equipos_intervenidos = n_distinct(Equipo)) %>%
-  filter(equipos_intervenidos == 6)
+  group_by(Planta, Fecha) %>%
+  summarise(equipos_intervenidos = n_distinct(Equipo), .groups = "drop") %>%
+  filter(equipos_intervenidos >= 6) # Cambiado a >= 6 para capturar ciclos completos
 
-ciclos
+ciclos_por_año <- ciclos %>%
+  mutate(Año = year(Fecha)) %>%
+  group_by(Planta, Año) %>%
+  summarise(ciclos = n(), .groups = "drop")
+
+print(ciclos)
+print(ciclos_por_año) # Responde: cuántos ciclos por año.
 ```
 
 # 7. Conclusiones
@@ -325,25 +439,20 @@ ciclos
 Del análisis térmico realizado sobre los enfriadores EP-110 asociados a las plantas GCP-2 y GCP-4, se concluye lo siguiente:
 
 ## - Presencia de equipos críticos:
-Tanto en GCP-2 como en GCP-4 se identifican equipos con desempeño térmico deficiente. En GCP-2, los equipos EP-110 A, C y E presentan un ΔT Agua promedio inferior a 4°C y altos porcentajes de registros bajo ese umbral (superiores al 75%), lo que evidencia una pérdida sostenida de eficiencia. En GCP-4, los equipos EP-110 C, A y F también exhiben un comportamiento crítico, con una situación similar respecto al bajo desempeño térmico.
+En GCP-2, los equipos EP-110 A, C y E presentan ΔT Agua promedio < 4°C y >75% de registros bajo este umbral, indicando pérdida de eficiencia. En GCP-4, EP-110 C, A y F muestran comportamiento similar. Esto sugiere la necesidad de inspección y mantenimiento.
 
 ## - Tendencia general en GCP-2 vs. GCP-4:
-La planta GCP-2 muestra condiciones más comprometidas en cuanto a eficiencia térmica general, con todos sus equipos presentando niveles de criticidad (ya sea por ΔT promedio o por porcentaje bajo umbral). En contraste, en GCP-4 se observan tres equipos con desempeño aceptable y tres con deficiencias más marcadas, indicando una mejor distribución del rendimiento.
+GCP-2 tiene todos sus equipos con niveles de criticidad, mientras que GCP-4 muestra una distribución más equilibrada, con tres equipos aceptables.
 
-## - Ausencia de ciclos completos de mantención:
-No se registran fechas en las que los seis enfriadores hayan sido intervenidos de forma simultánea. Esto sugiere que no se han realizado ciclos de mantención integrales, lo que podría estar afectando la eficiencia global del sistema de enfriamiento.
+## - Ciclos completos de mantención:
+Se detectaron ciclos con >= 6 equipos intervenidos, pero la frecuencia por año es baja (e.g., 0-2 ciclos), inconsistente con los 2 mantenimientos programados por equipo. Esto indica una falta de coordinación en mantenimientos integrales.
 
-## Recomendación de acción:
-Se recomienda implementar una función modular automatizada que permita monitorear periódicamente el rendimiento térmico, identificar tempranamente los equipos críticos y sugerir acciones correctivas, así como evaluar la programación de ciclos de mantención integrales.
+## - Correlación:
+La correlación negativa entre ΔT Agua y Temperatura GCP (e.g., -0.17) sugiere que altas temperaturas de gases reducen la eficiencia térmica, apoyando el marco teórico.
 
-### - Propuesta de Función Modular para el Examen
+# 8. Propuesta de Función Modular para el Examen:
+Implementar un dashboard interactivo con Shiny que ejecute la función analisis_ep110() para monitoreo periódico, permitiendo a los usuarios filtrar datos por planta y rango de fechas, identificar equipos críticos, y programar ciclos de mantenimiento integrales (5-6 equipos) en abril y octubre, alineados con el diseño. Este dashboard proporcionará visualizaciones dinámicas (tablas, gráficos de barras, líneas y dispersión) para facilitar la toma de decisiones.
 
-Vamos a crear una función general llamada: `analisis_ep110()`
+## Propósito de la función:
+  - Analizar el desempeño térmico, detectar equipos críticos (ΔT < 4°C), ciclos de mantenimiento (>= 5 equipos), correlación térmica, y resumen operativo. Esta función está diseñada para ser ejecutada dentro de un dashboard interactivo creado con Shiny, permitiendo a los usuarios explorar los resultados de forma dinámica mediante filtros (por planta y rango de fechas) y visualizaciones interactivas (tablas con DT, gráficos con plotly).
 
-#### Propósito de la función
-
-- Analizar el desempeño térmico de los equipos EP-110, detectando:
-  - Equipos críticos por bajo ΔT Agua
-  - Ciclos completos de mantención (cuando los 6 equipos fueron intervenidos)
-  - Correlación térmica entre temperatura de gases y ΔT Agua
-  - Resumen operativo por equipo (media, % bajo umbral, etc.)
