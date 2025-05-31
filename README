@@ -1,0 +1,119 @@
+Análisis Térmico y Gestión de Mantenimiento EP-110
+Este proyecto analiza el desempeño térmico de los enfriadores EP-110 en las plantas de limpieza de gases GCP-2 y GCP-4 desde 2015 hasta 2025. El objetivo principal es evaluar el rendimiento térmico, identificar equipos críticos, detectar ciclos de mantenimiento y analizar la correlación entre la temperatura de los gases y el diferencial de temperatura del agua (ΔT Agua).
+
+1. Problema / Objetivo
+El monitoreo térmico de los enfriadores EP-110 es crucial para optimizar el control térmico en las plantas de limpieza de gases. Este análisis busca responder a la pregunta:
+
+¿Qué equipos EP-110 presentan bajo desempeño térmico (ΔT Agua < 4°C), cuántos ciclos completos de mantenimiento se han realizado por año, y qué correlación existe entre la temperatura de gases de salida (GCP) y ΔT Agua?
+
+2. Introducción
+Se utilizan dos conjuntos de datos:
+
+data_extrapolated.csv: Registros horarios de 12 enfriadores (EP-110 A-F) en GCP-2 y GCP-4.
+
+temp_gcp_data_extrapolated.csv: Registros diarios de 4 trenes del Proceso de Limpieza de Gases (GCP).
+
+Las variables clave incluyen:
+
+Cuantitativas: ΔT Agua (°C), Temperatura de los Gases GCP (°C).
+
+Cualitativas: Planta (GCP-2, GCP-4), Equipo (EP-110 A-F), Estado (En Servicio, Mantención), Comentarios.
+
+3. Pre-procesamiento de Datos
+Los pasos de pre-procesamiento incluyen:
+
+Filtrado de registros de mantenimiento (ΔT Agua = 0).
+
+Renombrado de la variable Delta Agua a Δ Temp Agua.
+
+Manejo de valores faltantes (NA).
+
+Muestreo aleatorio (10%) para el Análisis Exploratorio de Datos (EDA).
+
+4. Análisis Exploratorio de Datos (EDA)
+El EDA incluye:
+
+Distribución de ΔT Agua por Equipo (boxplot).
+
+Histograma de ΔT Agua por Planta.
+
+Correlación entre ΔT Agua y Temperatura Gas Salida GCP.
+
+Comparación de la Temperatura de Salida Gas Trenes y ΔT Agua EP-110 (gráficos con doble eje).
+
+5. Planificación del Proyecto
+El análisis se centra en la eficiencia térmica de los enfriadores EP-110, medida a través del ΔT Agua. Se utiliza una metodología que incluye preprocesamiento, EDA, análisis de mantenimiento, modelado y validación.
+
+Entregables:
+
+Gráficos de distribución y series temporales (PNG).
+
+Tabla de equipos críticos (CSV).
+
+Línea de tiempo de los ciclos de mantenimiento (PNG).
+
+Modelo predictivo de ΔT Agua (R).
+
+Función modular analisis_ep110() (R).
+
+6. Interpretación de Resultados
+Se identifican equipos críticos con bajo rendimiento térmico y se analizan los ciclos de mantenimiento.
+
+7. Conclusiones
+Se identifican equipos críticos en ambas plantas (GCP-2 y GCP-4) con bajo ΔT Agua.
+
+Se observa una tendencia a mayor criticidad en los equipos de GCP-2.
+
+La frecuencia de los ciclos de mantenimiento es baja y no coincide con la planificación.
+
+Se encuentra una correlación negativa débil entre ΔT Agua y la Temperatura GCP.
+
+8. Propuesta de Función Modular para el Examen
+Se propone la implementación de un dashboard interactivo en Shiny que integre la función analisis_ep110() para el monitoreo y la gestión del mantenimiento.
+
+8.1 Descripción de la función analisis_ep110()
+La función automatiza el análisis del desempeño térmico de los enfriadores EP-110.
+
+Inputs:
+
+ep_data (dataframe): Datos de los enfriadores EP-110.
+
+gcp_data (dataframe, opcional): Datos de temperatura de los gases.
+
+fecha_inicio (date, opcional): Fecha de inicio del análisis.
+
+fecha_fin (date, opcional): Fecha de fin del análisis.
+
+Outputs:
+
+equipos_criticos (dataframe): Equipos críticos.
+
+ciclos_mantenimiento (dataframe): Ciclos de mantenimiento.
+
+correlacion_dt_temp (dataframe, opcional): Correlaciones entre ΔT Agua y Temperatura.
+
+graficos (lista): Gráficos generados.
+
+8.2 Descripción del dashboard de Shiny
+El dashboard proporciona una interfaz interactiva para explorar los resultados del análisis.
+
+Elementos de la interfaz:
+
+Selectores para filtrar datos por Planta y Fechas.
+
+Paneles para mostrar dataframes y gráficos.
+
+Panel para programar ciclos de mantenimiento.
+
+Interactividad:
+
+Filtrado dinámico de datos.
+
+Actualización en tiempo real de tablas y gráficos.
+
+Detalles específicos al hacer clic en los gráficos.
+
+Selección de equipos y fechas para mantenimiento.
+
+8.3 Conexión con el análisis
+La función analisis_ep110() automatiza el análisis, y el dashboard de Shiny facilita la interacción con los resultados, permitiendo un monitoreo continuo y una mejor toma de decisiones.
