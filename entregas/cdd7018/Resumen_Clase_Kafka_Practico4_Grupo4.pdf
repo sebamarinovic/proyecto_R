@@ -1,0 +1,449 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R 22 0 R 24 0 R] /Count 10 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 3237 >>
+stream
+BT /F2 22 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (Taller de Big Data - Apache Kafka) Tj ET
+BT /F2 15 Tf 0.28 0.38 0.52 rg 1 0 0 1 48.0 758.0 Tm (Resumen de clase y desarrollo del Pr\341ctico 4) Tj ET
+BT /F1 10.5 Tf 0.35 0.35 0.35 rg 1 0 0 1 48.0 732.0 Tm (CDD7018 \267 Unidad 3 \267 Grupo 4) Tj ET
+BT /F1 10.5 Tf 0.35 0.35 0.35 rg 1 0 0 1 48.0 718.0 Tm (Dataset: Amazon Reviews 2023 - Software) Tj ET
+BT /F1 10.5 Tf 0.35 0.35 0.35 rg 1 0 0 1 48.0 704.0 Tm (Profesor: Dante Travisany) Tj ET
+0.94 0.97 1.00 rg 48 592.0 499 98.0 re f
+0.45 0.62 0.82 RG 0.8 w 48 592.0 499 98.0 re S
+BT /F2 11.2 Tf 0.08 0.22 0.42 rg 1 0 0 1 60.0 672.0 Tm (Objetivo del documento) Tj ET
+BT /F1 10.1 Tf 0.15 0.15 0.15 rg 1 0 0 1 60.0 655.8 Tm (Resumir los conceptos principales de la clase de Kafka y dejar trazado, paso a) Tj ET
+BT /F1 10.1 Tf 0.15 0.15 0.15 rg 1 0 0 1 60.0 642.6 Tm (paso, c\363mo se desarroll\363 el Pr\341ctico 4 del Grupo 4, incluyendo decisiones de) Tj ET
+BT /F1 10.1 Tf 0.15 0.15 0.15 rg 1 0 0 1 60.0 629.4 Tm (dise\361o, resultados reales, pruebas de consumer groups, lag, at-least-once e) Tj ET
+BT /F1 10.1 Tf 0.15 0.15 0.15 rg 1 0 0 1 60.0 616.2 Tm (idempotencia.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 574.0 Tm (Resumen ejecutivo) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 562 m 547 562 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 551.0 Tm (La clase introduce el paso desde procesamiento batch hacia streaming: los datos ya no se) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 537.6 Tm (consideran un archivo cerrado, sino un flujo continuo de eventos. Kafka act\372a como capa) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 524.2 Tm (distribuida de ingesti\363n, persistencia y distribuci\363n; Spark Structured Streaming o) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 510.8 Tm (Flink se encargan luego del procesamiento avanzado.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 492.4 Tm (En el pr\341ctico, el hist\363rico de rese\361as de Amazon se convirti\363 en un stream. Se cre\363 el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 479.0 Tm (topic g4.resenas con 6 particiones, replicaci\363n 3 y retenci\363n de 14 d\355as. El productor) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 465.6 Tm (public\363 181.675 rese\361as desde 2022 y el consumidor calcul\363 m\351tricas por producto,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 452.2 Tm (enriqueci\363 con metadatos y gener\363 alertas.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 433.8 Tm (Las pruebas demostraron reparto de particiones, rebalanceo, consumer groups) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 420.4 Tm (independientes, crecimiento controlado del lag y sem\341ntica at-least-once. El resultado) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 407.0 Tm (final confirma que el consumidor Python no es idempotente y que el estado local es una) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 393.6 Tm (limitaci\363n importante.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (1/10) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 9 0 R >>
+endobj
+9 0 obj
+<< /Length 3622 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (1. De batch a streaming) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Batch vs. streaming) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (Hasta el Pr\341ctico 3 el trabajo estaba centrado en datos en reposo: HDFS, MapReduce, Pig,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (Hive y Spark sobre conjuntos acotados. En streaming los eventos llegan continuamente y) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 710.2 Tm (deben procesarse a medida que aparecen.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (La diferencia principal es la latencia. En batch se aceptan minutos u horas; en) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 678.4 Tm (streaming se buscan segundos o milisegundos. Ejemplos t\355picos son transacciones,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 665.0 Tm (sensores IoT, logs y m\351tricas de sistemas.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 642.6 Tm (\277Qu\351 resuelve Kafka?) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 630.6000000000001 m 547 630.6000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 619.6 Tm (Kafka es una plataforma distribuida para manejar streams de eventos. Se comporta como un) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 606.2 Tm (log distribuido: los productores agregan eventos al final, los datos permanecen) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 592.8 Tm (almacenados durante una retenci\363n configurable y cada consumidor avanza mediante) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 579.4 Tm (offsets.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 561.0 Tm (Kafka no elimina un mensaje cuando alguien lo lee. Esto permite que varios consumer) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 547.6 Tm (groups lean el mismo topic de forma independiente y que un grupo pueda volver a leer) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 534.2 Tm (datos hist\363ricos mientras sigan dentro de la retenci\363n.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 511.8 Tm (Arquitectura fundamental) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 499.8000000000003 m 547 499.8000000000003 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 488.8 Tm (Productor: publica eventos. Topic: nombre l\363gico del flujo. Partici\363n: fragmento f\355sico) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 475.4 Tm (ordenado del topic. Broker: servidor Kafka que almacena particiones. Consumidor: lee) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 462.0 Tm (eventos. Consumer group: conjunto de consumidores que se reparten las particiones.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 443.6 Tm (En el cl\372ster del curso existen tres brokers: kafka1:9092, kafka2:9092 y kafka3:9092,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 430.2 Tm (trabajando en modo KRaft.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 407.8 Tm (Idea clave) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 395.8000000000004 m 547 395.8000000000004 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 384.8 Tm (Kafka recibe, conserva y reparte eventos. El procesamiento anal\355tico complejo se delega) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 371.4 Tm (a motores como Spark Structured Streaming o Flink.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (2/10) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 3758 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (2. Particiones, claves, grupos y offsets) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Topics, particiones y orden) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (Cada partici\363n es un log append-only con offsets 0, 1, 2, ... El orden est\341 garantizado) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (dentro de una partici\363n, pero no existe un orden global entre todas las particiones del) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 710.2 Tm (topic.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (M\341s particiones permiten mayor paralelismo porque m\341s consumidores pueden trabajar) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 678.4 Tm (simult\341neamente dentro del mismo consumer group.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 656.0 Tm (La clave decide d\363nde cae el evento) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 644.0000000000001 m 547 644.0000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 633.0 Tm (Kafka usa la clave para asignar una partici\363n. La misma clave siempre cae en la misma) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 619.6 Tm (partici\363n mientras no cambie el n\372mero de particiones. Esto conserva el orden relativo) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 606.2 Tm (de los eventos asociados a esa clave.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 587.8 Tm (El riesgo es una clave caliente: si unas pocas claves concentran gran parte de los) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 574.4 Tm (eventos, algunas particiones reciben mucha m\341s carga que otras.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 552.0 Tm (Consumer groups y rebalanceo) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 540.0000000000002 m 547 540.0000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 529.0 Tm (Dentro de un consumer group, una partici\363n es le\355da por un solo consumidor a la vez. Si) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 515.6 Tm (hay m\341s consumidores que particiones, algunos quedan sin trabajo. Si un consumidor se) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 502.2 Tm (desconecta, Kafka redistribuye sus particiones mediante un rebalanceo.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 483.8 Tm (Consumer groups diferentes son independientes: cada uno puede leer el topic completo con) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 470.4 Tm (sus propios offsets.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 448.0 Tm (Offsets, commit y lag) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 436.00000000000034 m 547 436.00000000000034 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 425.0 Tm (El commit indica hasta qu\351 offset el grupo confirma que proces\363 correctamente. El) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 411.6 Tm (log-end-offset representa el final actual de la partici\363n. El lag es la diferencia entre) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 398.2 Tm (ambos.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 379.8 Tm (Si el lag crece de forma sostenida, los consumidores no alcanzan la tasa de producci\363n.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 366.4 Tm (La soluci\363n puede ser acelerar el procesamiento, aumentar particiones y consumidores o) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 353.0 Tm (reducir trabajo por evento.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (3/10) Tj ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 3382 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (3. Replicaci\363n, disponibilidad y garant\355as) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (L\355der, r\351plicas e ISR) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (Cada partici\363n tiene un broker l\355der y r\351plicas seguidoras. El conjunto ISR contiene las) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (r\351plicas que se encuentran sincronizadas con el l\355der.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 705.2 Tm (Con factor de replicaci\363n 3, la informaci\363n de cada partici\363n existe en los tres) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (brokers. Si el l\355der falla, una r\351plica en ISR puede asumir el liderazgo.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 669.4 Tm (acks y min.insync.replicas) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 657.4000000000001 m 547 657.4000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 646.4 Tm (El productor del pr\341ctico utiliza acks=all. Esto exige confirmaci\363n suficiente de las) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 633.0 Tm (r\351plicas en sincron\355a. En el cl\372ster, min.insync.replicas es 2, por lo que puede fallar) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 619.6 Tm (un broker sin perder datos confirmados.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 597.2 Tm (Garant\355as de entrega) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 585.2000000000002 m 547 585.2000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 574.2 Tm (At-most-once: se confirma antes de procesar; puede perder eventos. At-least-once: se) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 560.8 Tm (procesa y luego se confirma; evita p\351rdidas, pero puede repetir eventos. Exactly-once:) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 547.4 Tm (requiere mecanismos adicionales como idempotencia y transacciones.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 529.0 Tm (La estrategia m\341s com\372n es at-least-once con consumidores idempotentes: si el mismo) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 515.6 Tm (evento se procesa dos veces, el resultado final no cambia.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 493.2 Tm (Retenci\363n e integraci\363n con Spark) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 481.2000000000003 m 547 481.2000000000003 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 470.2 Tm (Kafka conserva los mensajes seg\372n una pol\355tica de retenci\363n y permite reprocesar el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 456.8 Tm (hist\363rico. En el pr\341ctico se configuraron 14 d\355as para asegurar que el topic siguiera) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 443.4 Tm (disponible en el Pr\341ctico 5.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 425.0 Tm (Spark Structured Streaming puede leer el topic usando DataFrames y procesar el flujo en) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 411.6 Tm (micro-batches, agregando manejo de estado, ventanas y tolerancia a fallas.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (4/10) Tj ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 3585 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (4. Desarrollo del Pr\341ctico 4 - Dise\361o y productor) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Punto de partida) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (Se trabaj\363 en ~/work/practico4 con cuatro piezas principales: g4.py, panel.py,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (productor.py y consumidor.py. El notebook actu\363 como panel de control para crear el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 710.2 Tm (topic y observar particiones, grupos, offsets y lag.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 687.8 Tm (Dise\361o del stream del Grupo 4) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 675.8000000000001 m 547 675.8000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 664.8 Tm (Evento: una rese\361a de Amazon Software. Campos enviados: timestamp, parent_asin, user_id,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 651.4 Tm (rating, helpful_vote, verified_purchase y title. Se omiti\363 text porque es el campo m\341s) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 638.0 Tm (pesado y no era necesario para las m\351tricas.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 619.6 Tm (Tiempo de evento: timestamp, convertido desde milisegundos al formato ISO. Clave:) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 606.2 Tm (parent_asin, porque agrupa todas las rese\361as del mismo producto y preserva su orden) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 592.8 Tm (relativo.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 574.4 Tm (Topic: g4.resenas. Configuraci\363n: 6 particiones, factor de replicaci\363n 3 y retenci\363n de) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 561.0 Tm (14 d\355as.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 538.6 Tm (Carga r\341pida del productor) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 526.6000000000003 m 547 526.6000000000003 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 515.6 Tm (Primera etapa: python productor.py --tasa 0 --max 100000. Resultado real: 100.000) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 502.2 Tm (eventos en 5,4 s, equivalentes a 18.361 eventos/s.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 483.8 Tm (Distribuci\363n observada: P0=15.406, P1=13.644, P2=20.831, P3=19.178, P4=17.254 y) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 470.4 Tm (P5=13.687. El reparto no fue perfectamente uniforme por la distribuci\363n real de) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 457.0 Tm (parent_asin.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 434.6 Tm (Continuaci\363n en vivo) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 422.60000000000036 m 547 422.60000000000036 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 411.6 Tm (Segunda etapa: python productor.py --tasa 200 --desde 100000. Se enviaron 81.675 eventos) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 398.2 Tm (en 408,4 s, manteniendo 200 eventos/s.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 379.8 Tm (Total final en g4.resenas: 181.675 rese\361as desde 2022. El topic se verific\363 al final con) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 366.4 Tm (fin\(g4.resenas\), manteniendo intactos los seis finales de partici\363n.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (5/10) Tj ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 3430 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (5. Consumidor, m\351tricas y consumer groups) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Consumidor del Grupo 4) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (El consumidor enriqueci\363 cada rese\361a mediante la tabla auxiliar meta, que relaciona) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (parent_asin con nombre del producto y tienda.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 705.2 Tm (La m\351trica en vivo mostr\363 n\372mero de rese\361as y rating promedio por producto. Tambi\351n se) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (visualiz\363 nombre y tienda.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 669.4 Tm (Regla de alerta) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 657.4000000000001 m 547 657.4000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 646.4 Tm (Se implement\363 la sugerencia del profesor: alerta cuando un producto acumula 10 o m\341s) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 633.0 Tm (rese\361as de 1 estrella durante un mismo d\355a de tiempo de evento.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 614.6 Tm (La regla se valid\363 con casos reales, entre ellos Paramount+ el 2022-02-06 y Stremium el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 601.2 Tm (2022-02-09.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 578.8 Tm (Dos relojes) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 566.8000000000002 m 547 566.8000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 555.8 Tm (mirar\(\) permiti\363 distinguir tiempo de evento y tiempo de llegada a Kafka. Para m\351tricas) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 542.4 Tm (como rese\361as por hora debe usarse timestamp, porque representa cu\341ndo ocurri\363 realmente) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 529.0 Tm (la rese\361a; la llegada a Kafka describe la ingesti\363n.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 506.6 Tm (Reparto entre dos consumidores) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 494.60000000000025 m 547 494.60000000000025 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 483.6 Tm (Con consumidor2 y sebastian dentro de g4.top, Kafka reparti\363 las particiones en dos) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 470.2 Tm (bloques: [0,1,2] y [3,4,5]. En una medici\363n el lag total fue 380.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 451.8 Tm (Al cerrar consumidor2 con Ctrl-C, Kafka rebalance\363 y sebastian recibi\363 [0,1,2,3,4,5].) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 438.4 Tm (Luego el grupo alcanz\363 nuevamente lag 0.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 416.0 Tm (Segundo grupo independiente) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 404.00000000000034 m 547 404.00000000000034 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 393.0 Tm (Se cre\363 g4.auditoria. Este grupo recibi\363 las seis particiones y alcanz\363 lag 0 de forma) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 379.6 Tm (independiente, demostrando que cada consumer group mantiene sus propios offsets.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (6/10) Tj ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 19 0 R >>
+endobj
+19 0 obj
+<< /Length 3612 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (6. Experimento de lag y recuperaci\363n) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Objetivo) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (Medir de forma controlada cu\341nto aumenta el consumer lag cuando el productor sigue) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (enviando eventos y no existe ning\372n consumidor activo.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 701.2 Tm (Prueba controlada) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 689.2 m 547 689.2 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 678.2 Tm (Se utiliz\363 un topic auxiliar g4.lagtest para no alterar el topic principal. La) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 664.8 Tm (producci\363n se fij\363 en 200 eventos/s y se confirm\363 que el grupo g4.lag estaba Empty antes) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 651.4 Tm (de medir.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 633.0 Tm (Lag inicial: 39.779. Despu\351s de 30,0 s sin consumidores: 45.781. Crecimiento observado:) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 619.6 Tm (6.002 eventos.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 597.2 Tm (Comparaci\363n te\363rica) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 585.2000000000002 m 547 585.2000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 574.2 Tm (Valor esperado = 200 eventos/s x 30 s = 6.000 eventos. Diferencia real: 2 eventos. El) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 560.8 Tm (experimento coincidi\363 pr\341cticamente de forma exacta con la teor\355a.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 538.4 Tm (Recuperaci\363n) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 526.4000000000002 m 547 526.4000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 515.4 Tm (Al volver a iniciar lag1, el consumidor recibi\363 nuevamente las seis particiones y) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 502.0 Tm (proces\363 el atraso hasta alcanzar lag 0.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 483.6 Tm (Una observaci\363n importante es que lag\(\) usa offsets confirmados del grupo, mientras el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 470.2 Tm (consumidor puede calcular su posici\363n local. Con auto-commit cada 5 s pueden existir) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 456.8 Tm (diferencias temporales entre ambas mediciones.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 434.4 Tm (Qu\351 se aprendi\363 al depurar la prueba) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 422.4000000000003 m 547 422.4000000000003 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 411.4 Tm (Dos procesos con el mismo nombre lag1 estaban activos y Kafka divid\355a las particiones) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 398.0 Tm (entre ambos. Se cerraron los procesos duplicados antes de repetir.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 379.6 Tm (Tambi\351n se detect\363 que medir 30 s cuando el productor ya hab\355a terminado produc\355a) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 366.2 Tm (crecimiento 0. La soluci\363n fue iniciar la medici\363n solo despu\351s de confirmar que) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 352.8 Tm (realmente estaban entrando nuevos eventos.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (7/10) Tj ET
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 21 0 R >>
+endobj
+21 0 obj
+<< /Length 3353 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (7. Commit manual, at-least-once e idempotencia) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Primera prueba y correcci\363n) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (El primer intento ley\363 1.000 eventos sobre las seis particiones y, al reiniciar, la) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (segunda lectura comenz\363 por otra partici\363n. La intersecci\363n dio 0, por lo que el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 710.2 Tm (experimento no demostraba de manera inequ\355voca la repetici\363n.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (Se corrigi\363 usando una \372nica partici\363n y un nuevo group_id: g4.manual2.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 669.4 Tm (Experimento definitivo) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 657.4000000000001 m 547 657.4000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 646.4 Tm (Primera lectura: 1.000 eventos de la partici\363n 0, offsets 0 a 999, con) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 633.0 Tm (enable_auto_commit=False. El consumidor se cerr\363 sin commit para simular una ca\355da.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 614.6 Tm (Al reiniciar el mismo grupo, el commit segu\355a en None y Kafka volvi\363 a entregar) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 601.2 Tm (exactamente los offsets 0 a 999. Eventos procesados dos veces: 1.000.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 582.8 Tm (Despu\351s del segundo procesamiento se ejecut\363 commit\(\) y el offset confirmado qued\363 en) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 569.4 Tm (1000.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 547.0 Tm (Conclusi\363n de la garant\355a) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 535.0000000000002 m 547 535.0000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 524.0 Tm (El resultado demuestra at-least-once: Kafka evita perder eventos, pero puede volver a) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 510.6 Tm (entregarlos si la aplicaci\363n cae despu\351s de procesarlos y antes de confirmar el offset.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 488.2 Tm (\277El consumidor es idempotente?) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 476.2000000000003 m 547 476.2000000000003 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 465.2 Tm (No. El consumidor incrementa contadores, suma ratings y aumenta el conteo de rese\361as de) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 451.8 Tm (1 estrella. Si un evento se repite, el estado cambia una segunda vez y pueden alterarse) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 438.4 Tm (m\351tricas o alertas.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 420.0 Tm (Para volverlo idempotente se requerir\355a deduplicaci\363n por identificador \372nico, un estado) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 406.6 Tm (externo o un motor de streaming con estado y garant\355as m\341s robustas.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (8/10) Tj ET
+endstream
+endobj
+22 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 23 0 R >>
+endobj
+23 0 obj
+<< /Length 5139 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (8. Resultado final y puntos para explicar) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Entrega final) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (La carpeta work/practico4 qued\363 limpia con: practico4_g4_FINAL.ipynb, productor.py,) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 723.6 Tm (consumidor.py, g4.py y panel.py.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 705.2 Tm (El topic g4.resenas no se borr\363, ya que ser\341 utilizado por Spark Streaming en el) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 691.8 Tm (Pr\341ctico 5. La verificaci\363n final mostr\363 181.675 eventos distribuidos en las seis) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 678.4 Tm (particiones.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 656.0 Tm (Preguntas que el grupo debe poder responder) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 644.0000000000001 m 547 644.0000000000001 l S
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 633.0 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 633.0 Tm (1\) \277Por qu\351 parent_asin es una buena clave? Porque mantiene juntas y ordenadas las) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 619.8 Tm (rese\361as de un mismo producto y permite calcular sus m\351tricas completas en un) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 606.6 Tm (consumidor.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 590.4 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 590.4 Tm (2\) \277Por qu\351 6 particiones? Porque permite hasta seis consumidores activos en) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 577.2 Tm (paralelo dentro de un mismo grupo.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 561.0 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 561.0 Tm (3\) \277Qu\351 es ISR? El conjunto de r\351plicas sincronizadas con el l\355der.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 544.8 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 544.8 Tm (4\) \277Qu\351 mide el lag? La diferencia entre el final del log y el \372ltimo offset) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 531.6 Tm (confirmado por el grupo.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 515.4 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 515.4 Tm (5\) \277Qu\351 ocurre en un rebalanceo? Kafka redistribuye particiones entre consumidores) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 502.2 Tm (activos.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 486.0 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 486.0 Tm (6\) \277Kafka transfiere los contadores en memoria? No; solo particiones y offsets. El) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 472.8 Tm (estado local de Python no se migra.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 456.6 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 456.6 Tm (7\) \277Por qu\351 un segundo grupo puede leer todo otra vez? Porque cada consumer group) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 443.4 Tm (mantiene offsets independientes.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 427.2 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 427.2 Tm (8\) \277Qu\351 significa at-least-once? Que un evento se procesa una o m\341s veces; puede) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 414.0 Tm (repetirse, pero no deber\355a perderse.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 397.8 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 397.8 Tm (9\) \277Por qu\351 nuestro consumidor no es idempotente? Porque procesar dos veces la) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 384.6 Tm (misma rese\361a vuelve a modificar contadores y sumas.) Tj ET
+BT /F2 10.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 53.0 368.4 Tm (-) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 368.4 Tm (10\) \277Qu\351 pedir\355amos a Spark Structured Streaming? Estado distribuido,) Tj ET
+BT /F1 10.1 Tf 0.12 0.12 0.12 rg 1 0 0 1 66.0 355.2 Tm (checkpointing, ventanas, recuperaci\363n autom\341tica y agregaciones globales.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 335.0 Tm (Conclusi\363n) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 322.9999999999999 m 547 322.9999999999999 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 312.0 Tm (El Pr\341ctico 4 permiti\363 pasar de an\341lisis batch a una arquitectura real de streaming. M\341s) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 298.6 Tm (que publicar datos, el objetivo fue entender c\363mo Kafka distribuye, replica, confirma y) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 285.2 Tm (recupera eventos, y d\363nde aparecen las limitaciones de un consumidor Python con estado) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 271.8 Tm (local.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (9/10) Tj ET
+endstream
+endobj
+24 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 25 0 R >>
+endobj
+25 0 obj
+<< /Length 2465 >>
+stream
+BT /F2 18 Tf 0.08 0.22 0.42 rg 1 0 0 1 48.0 790.0 Tm (9. Fuentes y referencias del curso) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 760.0 Tm (Material utilizado) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 748 m 547 748 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 737.0 Tm (BIG_DATA_KAFKA.pdf - clase Apache Kafka, CDD7018, Dante Travisany.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 718.6 Tm (Practico4-CDD7018-Kafka.pdf - pauta oficial del Pr\341ctico 4.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 700.2 Tm (practico4_g4_FINAL.ipynb - evidencia y resultados del Grupo 4.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 681.8 Tm (productor.py, consumidor.py, g4.py y panel.py - scripts de ejecuci\363n y apoyo del) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 668.4 Tm (pr\341ctico.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 646.0 Tm (Referencias mencionadas en la clase) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 634.0000000000001 m 547 634.0000000000001 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 623.0 Tm (Kreps, Narkhede y Rao \(2011\), Kafka: a Distributed Messaging System for Log Processing.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 604.6 Tm (Kreps \(2013\), The Log: What every software engineer should know about real-time data's) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 591.2 Tm (unifying abstraction.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 572.8 Tm (Shapira, Palino, Sivaram y Petty \(2021\), Kafka: The Definitive Guide, 2a edici\363n.) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 554.4 Tm (Kleppmann \(2017\), Designing Data-Intensive Applications, cap\355tulo 11.) Tj ET
+BT /F2 14.2 Tf 0.10 0.25 0.45 rg 1 0 0 1 48.0 532.0 Tm (Recordatorio de entrega) Tj ET
+0.75 0.82 0.90 RG 0.7 w 48 520.0000000000002 m 547 520.0000000000002 l S
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 509.0 Tm (La pauta indica entregar en work/practico4 un notebook con salidas, junto con) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 495.6 Tm (productor.py y consumidor.py. Antes de cerrar: detener productores y consumidores con) Tj ET
+BT /F1 10.3 Tf 0.12 0.12 0.12 rg 1 0 0 1 48.0 482.2 Tm (Ctrl-C y no borrar el topic principal.) Tj ET
+0.82 0.82 0.82 RG 0.5 w 48 38 m 547 38 l S
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 48.0 22.0 Tm (CDD7018 \267 Taller de Big Data \267 Apache Kafka \267 Grupo 4) Tj ET
+BT /F1 8.5 Tf 0.40 0.40 0.40 rg 1 0 0 1 527.0 22.0 Tm (10/10) Tj ET
+endstream
+endobj
+xref
+0 26
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000178 00000 n 
+0000000275 00000 n 
+0000000377 00000 n 
+0000000472 00000 n 
+0000000618 00000 n 
+0000003906 00000 n 
+0000004052 00000 n 
+0000007725 00000 n 
+0000007873 00000 n 
+0000011683 00000 n 
+0000011831 00000 n 
+0000015265 00000 n 
+0000015413 00000 n 
+0000019050 00000 n 
+0000019198 00000 n 
+0000022680 00000 n 
+0000022828 00000 n 
+0000026492 00000 n 
+0000026640 00000 n 
+0000030045 00000 n 
+0000030193 00000 n 
+0000035384 00000 n 
+0000035532 00000 n 
+trailer
+<< /Size 26 /Root 1 0 R >>
+startxref
+38049
+%%EOF
